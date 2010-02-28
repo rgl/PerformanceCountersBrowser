@@ -1,0 +1,229 @@
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace PerformanceCountersBrowser
+{
+    public partial class MainForm : Form
+    {
+        private SearchForm _searchForm;
+
+        public MainForm()
+        {
+            InitializeComponent();
+        }
+
+        private class CategoryInfo
+        {
+            public string Name { get; set; }
+            public string Help { get; set; }
+            public PerformanceCounterCategoryType Type { get; set; }
+        }
+
+        private class CounterInfo
+        {
+            public CategoryInfo CategoryInfo { get; set; }
+            public string Name { get; set; }
+            public string Help { get; set; }
+            public PerformanceCounterType Type { get; set; }
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            var categories = PerformanceCounterCategory.GetCategories().OrderBy(c => c.CategoryName);
+
+            treeView.BeginUpdate();
+            try
+            {
+                foreach (var category in categories)
+                {
+                    var node = new TreeNode(category.CategoryName)
+                    {
+                        Tag = new CategoryInfo
+                        {
+                            Name = category.CategoryName,
+                            Help = category.CategoryHelp,
+                            Type = category.CategoryType
+                        }
+                    };
+                    node.Nodes.Add("Loading...");
+                    treeView.Nodes.Add(node);
+                }
+            }
+            finally
+            {
+                treeView.EndUpdate();
+            }
+        }
+
+        private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            helpTextBox.Text = "";
+            instancesListBox.Items.Clear();
+
+            var categoryInfo = e.Node.Tag as CategoryInfo;
+            if (categoryInfo != null)
+            {
+                helpTextBox.Text = string.Format(
+                    "{0}\r\n\r\nCategory Type={1}",
+                    categoryInfo.Help,
+                    categoryInfo.Type
+                );
+
+                if (categoryInfo.Type == PerformanceCounterCategoryType.MultiInstance)
+                {
+                    var category = new PerformanceCounterCategory(categoryInfo.Name);
+                    var instanceNames = category.GetInstanceNames().OrderBy(s => s).ToArray();
+                    instancesListBox.Items.AddRange(instanceNames);
+                }
+                return;
+            }
+
+            var counterInfo = e.Node.Tag as CounterInfo;
+            if (counterInfo != null)
+            {
+                helpTextBox.Text = string.Format(
+                    "{0}\r\n\r\nCounter Type={1}",
+                    counterInfo.Help,
+                    counterInfo.Type
+                );
+
+                categoryInfo = counterInfo.CategoryInfo;
+                if (categoryInfo.Type == PerformanceCounterCategoryType.MultiInstance)
+                {
+                    var category = new PerformanceCounterCategory(categoryInfo.Name);
+                    var instanceNames = category.GetInstanceNames().OrderBy(s => s).ToArray();
+                    instancesListBox.Items.AddRange(instanceNames);
+                }
+                return;
+            }
+        }
+
+        private void treeView_AfterExpand(object sender, TreeViewEventArgs e)
+        {
+            LoadCounters(e.Node);
+        }
+
+        private void LoadCounters(TreeNode categoryNode)
+        {
+            var firstNode = categoryNode.Nodes[0];
+
+            // if the node childs are already loaded, bail.
+            if (firstNode.Tag != null || categoryNode.Nodes.Count > 1)
+                return;
+
+            var categoryInfo = categoryNode.Tag as CategoryInfo;
+            if (categoryInfo != null)
+            {
+                // TODO load the category counters...
+                var category = new PerformanceCounterCategory(categoryInfo.Name);
+
+                treeView.BeginUpdate();
+                try
+                {
+                    categoryNode.Nodes.Clear();
+
+                    if (category.CategoryType == PerformanceCounterCategoryType.SingleInstance)
+                    {
+                        var counters = category.GetCounters().OrderBy(c => c.CounterName);
+                        foreach (var counter in counters)
+                        {
+                            var node = new TreeNode(counter.CounterName)
+                                       {
+                                           Tag = new CounterInfo
+                                                 {
+                                                     CategoryInfo = categoryInfo,
+                                                     Name = counter.CounterName,
+                                                     Help = counter.CounterHelp,
+                                                     Type = counter.CounterType
+                                                 }
+                                       };
+
+                            categoryNode.Nodes.Add(node);
+
+                            counter.Dispose();
+                        }
+                    }
+                    else if (category.CategoryType == PerformanceCounterCategoryType.MultiInstance)
+                    {
+                        var instanceNames = category.GetInstanceNames();
+
+                        LoadPerformanceCountersFromInstance(categoryNode, categoryInfo, category, "");
+
+                        /*foreach (var instanceName in instanceNames)
+                        {
+                            LoadPerformanceCountersFromInstance(e.Node, categoryInfo, category, instanceName);
+                        }*/
+                    }
+                    else
+                    {
+                        categoryNode.Nodes.Add("Unknown category type...");
+                    }
+                }
+                finally
+                {
+                    treeView.EndUpdate();
+                }
+            }
+        }
+
+        private static void LoadPerformanceCountersFromInstance(TreeNode parentNode, CategoryInfo info, PerformanceCounterCategory category, string instanceName)
+        {
+            var counters = category.GetCounters(instanceName).OrderBy(c => c.CounterName);
+
+            foreach (var counter in counters)
+            {
+                var node = new TreeNode(counter.CounterName)//string.Format("{0} -- {1}", counter.CounterName, instanceName))
+                {
+                    // TODO use an CounterInstanceInfo instead...
+                    Tag = new CounterInfo
+                    {
+                        CategoryInfo = info,
+                        Name = counter.CounterName,
+                        Help = counter.CounterHelp,
+                        Type = counter.CounterType
+                    }
+                };
+                parentNode.Nodes.Add(node);
+                counter.Dispose();
+            }
+        }
+
+        private void searchToolStripButton_Click(object sender, EventArgs e)
+        {
+            if (_searchForm == null)
+            {
+                _searchForm = new SearchForm();
+                _searchForm.VisibleChanged += (a, b) => searchToolStripButton.Checked = _searchForm.Visible;
+                _searchForm.PerformanceCounterSelected += _searchForm_PerformanceCounterSelected;
+            }
+
+            if (searchToolStripButton.Checked)
+                _searchForm.Show(this);
+            else
+                _searchForm.Hide();
+        }
+
+        void _searchForm_PerformanceCounterSelected(string categoryName, string counterName)
+        {
+            var categoryNode = treeView.Nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == categoryName);
+            if (categoryNode == null)
+                return;
+
+            for (var i = 0; i < 2; ++i)
+            {
+                var counterNode = categoryNode.Nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == counterName);
+                if (counterNode == null)
+                {
+                    LoadCounters(categoryNode);
+                }
+                else
+                {
+                    treeView.SelectedNode = counterNode;
+                    break;
+                }
+            }
+        }
+    }
+}
