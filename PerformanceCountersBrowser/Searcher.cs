@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Search;
@@ -53,7 +52,7 @@ namespace PerformanceCountersBrowser
         public Searcher(string indexPath)
         {
             var directory = FSDirectory.Open(new DirectoryInfo(indexPath));
-            var analyzer = new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_CURRENT);
+            var analyzer = Indexer.CreateAnalyzer();
             _parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_CURRENT, "help", analyzer);
             _searcher = new IndexSearcher(directory, true);
         }
