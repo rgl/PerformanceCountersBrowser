@@ -34,6 +34,11 @@ namespace PerformanceCountersBrowser
             // NB: This analyzer is only used when user uses the AddDocument overload
             //     that does not receive an Analyzer type. (like we do in the AddPerformanceCounter
             //     method bellow).
+            // TODO maybe we should use the SnowballAnalyzer instead.
+            // TODO use an Synonym filter (SynonymFilter or SynonymAnalyzer)?
+            //      (underneat it might use something like WordNetSynonymEngine).
+            //      that is, convert all token to the same/first synonym to
+            //      save index space.
             var analyzer = new PerformanceCounterAnalyzer(Lucene.Net.Util.Version.LUCENE_CURRENT);
             return analyzer;
         }
