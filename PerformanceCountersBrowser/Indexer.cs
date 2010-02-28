@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using Lucene.Net.Analysis.Standard;
+using Lucene.Net.Analysis;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
@@ -12,7 +12,7 @@ namespace PerformanceCountersBrowser
     {
         private readonly IndexWriter _writer;
 
-        public Indexer(string indexPath)
+        public static Analyzer CreateAnalyzer()
         {
             // create the standard analyzer. this analyzer is a compound of:
             //  - StandardTokenizer
@@ -30,12 +30,18 @@ namespace PerformanceCountersBrowser
             //  - LowerCaseFilter
             //  - StopFilter
             //  	- Default English stop words removal (StopAnalyzer.ENGLISH_STOP_WORDS_SET)
-            // TODO use stemming? (eg. a PorterStemFilter)
+            //  - PorterStemFilter
             // NB: This analyzer is only used when user uses the AddDocument overload
             //     that does not receive an Analyzer type. (like we do in the AddPerformanceCounter
             //     method bellow).
-            var defaultAnalyzer = new StandardAnalyzer(Lucene.Net.Util.Version.LUCENE_CURRENT);
+            var analyzer = new PerformanceCounterAnalyzer(Lucene.Net.Util.Version.LUCENE_CURRENT);
+            return analyzer;
+        }
+
+        public Indexer(string indexPath)
+        {
             var directory = FSDirectory.Open(new DirectoryInfo(indexPath));
+            var defaultAnalyzer = CreateAnalyzer();
             _writer = new IndexWriter(directory, defaultAnalyzer, true, IndexWriter.MaxFieldLength.UNLIMITED);
             //_writer.SetInfoStream(Console.Error); // TODO cast Console.Error into a StreamWriter...
         }
