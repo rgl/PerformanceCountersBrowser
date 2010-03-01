@@ -12,12 +12,13 @@ namespace PerformanceCountersBrowser
         public SearchForm()
         {
             InitializeComponent();
-
-            CreateSearcher();
         }
 
         private void searchButton_Click(object sender, EventArgs e)
         {
+            if (!CreateSearcher())
+                return;
+
             // add the text into the combobox items.
             var queryText = searchComboBox.Text;
             var index = searchComboBox.Items.IndexOf(queryText);
@@ -82,7 +83,8 @@ namespace PerformanceCountersBrowser
 
         private void reIndexButton_Click(object sender, EventArgs e)
         {
-            _searcher.Dispose();
+            if (_searcher != null)
+                _searcher.Dispose();
 
             if (Directory.Exists("index"))
                 Directory.Delete("index", true);
@@ -91,11 +93,24 @@ namespace PerformanceCountersBrowser
             CreateSearcher();
         }
 
-        private void CreateSearcher()
+        private bool CreateSearcher()
         {
             if (_searcher != null)
+            {
                 _searcher.Dispose();
-            _searcher = new Searcher("index");
+                _searcher = null;
+            }
+
+            try
+            {
+                _searcher = new Searcher("index");
+                return true;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Error opening the index (you might need to reindex it).", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
         }
 
         private static void CreateIndex()

@@ -174,18 +174,38 @@ namespace PerformanceCountersBrowser
 
             foreach (var counter in counters)
             {
-                var node = new TreeNode(counter.CounterName)//string.Format("{0} -- {1}", counter.CounterName, instanceName))
+                try
                 {
-                    // TODO use an CounterInstanceInfo instead...
-                    Tag = new CounterInfo
+                    var node = new TreeNode(counter.CounterName)//string.Format("{0} -- {1}", counter.CounterName, instanceName))
                     {
-                        CategoryInfo = info,
-                        Name = counter.CounterName,
-                        Help = counter.CounterHelp,
-                        Type = counter.CounterType
-                    }
-                };
-                parentNode.Nodes.Add(node);
+                        // TODO use an CounterInstanceInfo instead...
+                        Tag = new CounterInfo
+                        {
+                            CategoryInfo = info,
+                            Name = counter.CounterName,
+                            Help = counter.CounterHelp,
+                            Type = counter.CounterType
+                        }
+                    };
+                    parentNode.Nodes.Add(node);
+                    
+                }
+                catch (Exception e)
+                {
+                    // NB: sometimes, the CounterType property getter raises an
+                    // InvalidOperationException:
+                    //
+                    //  The Counter layout for the Category specified is invalid, a
+                    //  counter of the type:  AverageCount64, AverageTimer32,
+                    //  CounterMultiTimer, CounterMultiTimerInverse,
+                    //  CounterMultiTimer100Ns, CounterMultiTimer100NsInverse,
+                    //  RawFraction, or SampleFraction has to be immediately
+                    //  followed by any of the base counter types: AverageBase,
+                    //  CounterMultiBase, RawBase or SampleBase.
+                    //
+                    // So, I'm going to ignore the counter altogether.
+                    // TODO log this.
+                }
                 counter.Dispose();
             }
         }

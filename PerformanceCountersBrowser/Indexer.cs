@@ -67,9 +67,29 @@ namespace PerformanceCountersBrowser
             nameField.SetBoost(2);
             doc.Add(nameField);
 
-            var typeField = new Field("type", counter.CounterType.ToString(), Field.Store.YES, Field.Index.ANALYZED_NO_NORMS, Field.TermVector.NO);
-            typeField.SetOmitTermFreqAndPositions(true);
-            doc.Add(typeField);
+            // NB: sometimes, the CounterType property getter raises an
+            // InvalidOperationException:
+            //
+            //  The Counter layout for the Category specified is invalid, a
+            //  counter of the type:  AverageCount64, AverageTimer32,
+            //  CounterMultiTimer, CounterMultiTimerInverse,
+            //  CounterMultiTimer100Ns, CounterMultiTimer100NsInverse,
+            //  RawFraction, or SampleFraction has to be immediately
+            //  followed by any of the base counter types: AverageBase,
+            //  CounterMultiBase, RawBase or SampleBase.
+            //
+            // So, if that happens here, I'm not going to create the "type"
+            // field.
+            try
+            {
+                var typeField = new Field("type", counter.CounterType.ToString(), Field.Store.YES, Field.Index.ANALYZED_NO_NORMS, Field.TermVector.NO);
+                typeField.SetOmitTermFreqAndPositions(true);
+                doc.Add(typeField);
+            }
+            catch (Exception e)
+            {
+                // TODO log this.
+            }
 
             doc.Add(new Field("help", counter.CounterHelp, Field.Store.YES, Field.Index.ANALYZED));
 
