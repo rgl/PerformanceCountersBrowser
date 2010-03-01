@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.splitContainer = new System.Windows.Forms.SplitContainer();
             this.treeViewLabel = new System.Windows.Forms.Label();
@@ -39,6 +40,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.searchToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
             this.splitContainer.SuspendLayout();
@@ -46,6 +49,7 @@
             this.verticalSplitContainer.Panel2.SuspendLayout();
             this.verticalSplitContainer.SuspendLayout();
             this.toolStrip.SuspendLayout();
+            this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer
@@ -82,11 +86,13 @@
             this.treeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView.ContextMenuStrip = this.contextMenuStrip;
             this.treeView.HideSelection = false;
             this.treeView.Location = new System.Drawing.Point(6, 16);
             this.treeView.Name = "treeView";
             this.treeView.Size = new System.Drawing.Size(367, 296);
             this.treeView.TabIndex = 1;
+            this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
             this.treeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
             this.treeView.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterExpand);
             // 
@@ -168,9 +174,24 @@
             this.searchToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("searchToolStripButton.Image")));
             this.searchToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.searchToolStripButton.Name = "searchToolStripButton";
-            this.searchToolStripButton.Size = new System.Drawing.Size(62, 22);
+            this.searchToolStripButton.Size = new System.Drawing.Size(60, 22);
             this.searchToolStripButton.Text = "Search";
             this.searchToolStripButton.Click += new System.EventHandler(this.searchToolStripButton_Click);
+            // 
+            // contextMenuStrip
+            // 
+            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyToolStripMenuItem});
+            this.contextMenuStrip.Name = "contextMenuStrip";
+            this.contextMenuStrip.Size = new System.Drawing.Size(153, 48);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyToolStripMenuItem.Text = "Copy";
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -195,6 +216,7 @@
             this.verticalSplitContainer.ResumeLayout(false);
             this.toolStrip.ResumeLayout(false);
             this.toolStrip.PerformLayout();
+            this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -212,6 +234,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStrip toolStrip;
         private System.Windows.Forms.ToolStripButton searchToolStripButton;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
 
     }
 }

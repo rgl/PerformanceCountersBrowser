@@ -245,5 +245,46 @@ namespace PerformanceCountersBrowser
                 }
             }
         }
+
+        private void treeView_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right)
+                return;
+
+            var node = treeView.GetNodeAt(e.X, e.Y);
+            if (node != null)
+            {
+                treeView.SelectedNode = node;
+            }
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var node = treeView.SelectedNode;
+            
+            if (node.Tag is CategoryInfo)
+            {
+                var categoryInfo = (CategoryInfo)node.Tag;
+
+                Clipboard.SetText(string.Format(
+                    "{0}\r\n{1}\r\n{2}\r\n",
+                    categoryInfo.Type,
+                    categoryInfo.Name,
+                    categoryInfo.Help
+                ));
+            }
+            else if (node.Tag is CounterInfo)
+            {
+                var counterInfo = (CounterInfo)node.Tag;
+
+                Clipboard.SetText(string.Format(
+                    "{0}\r\n{1}\r\n{2}\r\n{3}\r\n",
+                    counterInfo.Type,
+                    counterInfo.CategoryInfo.Name,
+                    counterInfo.Name,
+                    counterInfo.Help
+                ));
+            }
+        }
     }
 }
