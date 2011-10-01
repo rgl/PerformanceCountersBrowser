@@ -53,7 +53,7 @@ namespace PerformanceCountersBrowser
         {
             var directory = FSDirectory.Open(new DirectoryInfo(indexPath));
             var analyzer = Indexer.CreateAnalyzer();
-            _parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_CURRENT, "help", analyzer);
+            _parser = new QueryParser(Indexer.LuceneVersion, "help", analyzer);
             _searcher = new IndexSearcher(directory, true);
         }
 

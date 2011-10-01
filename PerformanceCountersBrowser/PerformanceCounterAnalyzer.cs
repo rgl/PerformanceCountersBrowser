@@ -1,22 +1,18 @@
-﻿using Lucene.Net.Analysis;
+﻿using System.IO;
+using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
+using Lucene.Net.Util;
 
 namespace PerformanceCountersBrowser
 {
     class PerformanceCounterAnalyzer : StandardAnalyzer
     {
-        public PerformanceCounterAnalyzer(Lucene.Net.Util.Version version)
+        public PerformanceCounterAnalyzer(Version version)
             : base(version)
         {
         }
 
-        public override TokenStream TokenStream(string fieldName, System.IO.TextReader reader)
-        {
-            var baseStream = base.TokenStream(fieldName, reader);
-            return new PorterStemFilter(baseStream);
-        }
-
-        public override TokenStream ReusableTokenStream(string fieldName, System.IO.TextReader reader)
+        public override TokenStream TokenStream(string fieldName, TextReader reader)
         {
             var baseStream = base.TokenStream(fieldName, reader);
             return new PorterStemFilter(baseStream);
