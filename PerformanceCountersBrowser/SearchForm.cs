@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
@@ -8,6 +10,7 @@ namespace PerformanceCountersBrowser
     public partial class SearchForm : Form
     {
         private Searcher _searcher;
+        private BackgroundWorker _indexerBackgroundWorker;
 
         public SearchForm()
         {
@@ -83,14 +86,68 @@ namespace PerformanceCountersBrowser
 
         private void reIndexButton_Click(object sender, EventArgs e)
         {
+            if (_indexerBackgroundWorker != null)
+                return;
+
             if (_searcher != null)
                 _searcher.Dispose();
 
             if (Directory.Exists("index"))
                 Directory.Delete("index", true);
 
-            CreateIndex();
+            reIndexButton.Enabled = false;
+
+            _indexerBackgroundWorker = new BackgroundWorker
+                                           {
+                                               WorkerSupportsCancellation = true,
+                                               WorkerReportsProgress = true,
+                                           };
+            _indexerBackgroundWorker.DoWork += _indexerBackgroundWorker_DoWork;
+            _indexerBackgroundWorker.RunWorkerCompleted += _indexerBackgroundWorker_RunWorkerCompleted;
+
+            var indexerProgressForm = new ProgressForm(_indexerBackgroundWorker) {Text = "Indexing..."};
+            indexerProgressForm.Show(this);
+
+            _indexerBackgroundWorker.RunWorkerAsync();
+        }
+
+        private void _indexerBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            _indexerBackgroundWorker.Dispose();
+            _indexerBackgroundWorker = null;
+            reIndexButton.Enabled = true;
             CreateSearcher();
+        }
+
+        private static void _indexerBackgroundWorker_DoWork(object sender, DoWorkEventArgs workerEventArgs)
+        {
+            var worker = (BackgroundWorker) sender;
+
+            // TODO maybe we should use an RAMDirectory to store the index on memory...);
+            using (var indexer = new Indexer("index"))
+            {
+                var categories = PerformanceCounterCategory.GetCategories();
+
+                foreach (var n in categories.Select((e,i)=>new{e,i}))
+                {
+                    var category = n.e;
+                    var counters = category.CategoryType == PerformanceCounterCategoryType.SingleInstance ? category.GetCounters() : category.GetCounters("");
+
+                    foreach (var counter in counters)
+                    {
+                        indexer.AddPerformanceCounter(counter);
+                        counter.Dispose();
+                    }
+
+                    if (worker.CancellationPending)
+                    {
+                        workerEventArgs.Cancel = true;
+                        return;
+                    }
+
+                    worker.ReportProgress(n.i * 100 / categories.Length);
+                }
+            }
         }
 
         private bool CreateSearcher()
@@ -110,26 +167,6 @@ namespace PerformanceCountersBrowser
             {
                 MessageBox.Show(e.Message, "Error opening the index (you might need to reindex it).", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
-            }
-        }
-
-        private static void CreateIndex()
-        {
-            // TODO maybe we should use an RAMDirectory to store the index on memory...
-            using (var indexer = new Indexer("index"))
-            {
-                var categories = PerformanceCounterCategory.GetCategories();
-
-                foreach (var category in categories)
-                {
-                    var counters = category.CategoryType == PerformanceCounterCategoryType.SingleInstance ? category.GetCounters() : category.GetCounters("");
-
-                    foreach (var counter in counters)
-                    {
-                        indexer.AddPerformanceCounter(counter);
-                        counter.Dispose();
-                    }
-                }
             }
         }
 
