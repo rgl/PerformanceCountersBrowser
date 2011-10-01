@@ -12,6 +12,8 @@ namespace PerformanceCountersBrowser
     {
         private readonly IndexWriter _writer;
 
+        public static readonly Lucene.Net.Util.Version LuceneVersion = Lucene.Net.Util.Version.LUCENE_29;
+
         public static Analyzer CreateAnalyzer()
         {
             // create the standard analyzer. this analyzer is a compound of:
@@ -39,7 +41,7 @@ namespace PerformanceCountersBrowser
             //      (underneat it might use something like WordNetSynonymEngine).
             //      that is, convert all token to the same/first synonym to
             //      save index space.
-            var analyzer = new PerformanceCounterAnalyzer(Lucene.Net.Util.Version.LUCENE_CURRENT);
+            var analyzer = new PerformanceCounterAnalyzer(LuceneVersion);
             return analyzer;
         }
 
