@@ -42,6 +42,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.searchToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.systemMonitorToolStripButton = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
@@ -96,6 +97,7 @@
             this.treeView.TabIndex = 1;
             this.treeView.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterExpand);
             this.treeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterSelect);
+            this.treeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseDoubleClick);
             this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
             // 
             // contextMenuStrip
@@ -178,7 +180,8 @@
             // toolStrip
             // 
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.searchToolStripButton});
+            this.searchToolStripButton,
+            this.systemMonitorToolStripButton});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(641, 25);
@@ -194,6 +197,17 @@
             this.searchToolStripButton.Size = new System.Drawing.Size(62, 22);
             this.searchToolStripButton.Text = "Search";
             this.searchToolStripButton.Click += new System.EventHandler(this.searchToolStripButton_Click);
+            // 
+            // systemMonitorToolStripButton
+            // 
+            this.systemMonitorToolStripButton.CheckOnClick = true;
+            this.systemMonitorToolStripButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.systemMonitorToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("systemMonitorToolStripButton.Image")));
+            this.systemMonitorToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.systemMonitorToolStripButton.Name = "systemMonitorToolStripButton";
+            this.systemMonitorToolStripButton.Size = new System.Drawing.Size(23, 22);
+            this.systemMonitorToolStripButton.Text = "System Monitor";
+            this.systemMonitorToolStripButton.Click += new System.EventHandler(this.systemMonitorToolStripButton_Click);
             // 
             // MainForm
             // 
@@ -241,6 +255,7 @@
         private System.Windows.Forms.ToolStripButton searchToolStripButton;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton systemMonitorToolStripButton;
 
     }
 }
