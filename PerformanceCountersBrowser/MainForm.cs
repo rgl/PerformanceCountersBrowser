@@ -8,6 +8,7 @@ namespace PerformanceCountersBrowser
     public partial class MainForm : Form
     {
         private SearchForm _searchForm;
+        private SystemMonitorForm _systemMonitorForm;
 
         public MainForm()
         {
@@ -225,6 +226,20 @@ namespace PerformanceCountersBrowser
                 _searchForm.Hide();
         }
 
+        private void systemMonitorToolStripButton_Click(object sender, EventArgs e)
+        {
+            if (_systemMonitorForm == null)
+            {
+                _systemMonitorForm = new SystemMonitorForm();
+                _systemMonitorForm.VisibleChanged += (a, b) => systemMonitorToolStripButton.Checked = _systemMonitorForm.Visible;
+            }
+
+            if (systemMonitorToolStripButton.Checked)
+                _systemMonitorForm.Show(this);
+            else
+                _systemMonitorForm.Hide();
+        }
+
         void _searchForm_PerformanceCounterSelected(string categoryName, string counterName)
         {
             var categoryNode = treeView.Nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == categoryName);
@@ -284,6 +299,42 @@ namespace PerformanceCountersBrowser
                     counterInfo.Name,
                     counterInfo.Help
                 ));
+            }
+        }
+
+        private void treeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (_systemMonitorForm == null || !_systemMonitorForm.Visible)
+                return;
+
+            var node = e.Node;
+
+            if (node.Tag is CounterInfo)
+            {
+                var counterInfo = (CounterInfo)node.Tag;
+
+                string counterPath;
+
+                if (counterInfo.CategoryInfo.Type == PerformanceCounterCategoryType.SingleInstance)
+                {
+                    counterPath = string.Format(@"\{0}\{1}", counterInfo.CategoryInfo.Name, counterInfo.Name);
+                }
+                else
+                {
+                    if (instancesListBox.Items.Count == 0)
+                        return;
+                    // TODO add all instances...
+                    counterPath = string.Format(@"\{0}({2})\{1}", counterInfo.CategoryInfo.Name, counterInfo.Name, instancesListBox.Items[0]);
+                }
+
+                try
+                {
+                    _systemMonitorForm.AddCounter(counterPath);
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(this, string.Format("Failed to add counter with path {0}: {1}", counterPath, error), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
     }
