@@ -1,10 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using Lucene.Net.Analysis;
+﻿using Lucene.Net.Analysis;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Store;
+using System;
+using System.Diagnostics;
+using System.IO;
 
 namespace PerformanceCountersBrowser
 {
@@ -12,7 +12,7 @@ namespace PerformanceCountersBrowser
     {
         private readonly IndexWriter _writer;
 
-        public static readonly Lucene.Net.Util.Version LuceneVersion = Lucene.Net.Util.Version.LUCENE_29;
+        public static readonly Lucene.Net.Util.Version LuceneVersion = Lucene.Net.Util.Version.LUCENE_30;
 
         public static Analyzer CreateAnalyzer()
         {
@@ -57,16 +57,22 @@ namespace PerformanceCountersBrowser
         {
             var doc = new Document();
 
-            var documentTypeField = new Field("_type", "counter", Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS, Field.TermVector.NO);
-            documentTypeField.SetOmitTermFreqAndPositions(true);
+            var documentTypeField = new Field("_type", "counter", Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS, Field.TermVector.NO)
+            {
+                OmitTermFreqAndPositions = true
+            };
             doc.Add(documentTypeField);
 
-            var categoryField = new Field("category", counter.CategoryName, Field.Store.YES, Field.Index.ANALYZED);
-            categoryField.SetBoost(1.5f);
+            var categoryField = new Field("category", counter.CategoryName, Field.Store.YES, Field.Index.ANALYZED)
+            {
+                Boost = 1.5f
+            };
             doc.Add(categoryField);
 
-            var nameField = new Field("name", counter.CounterName, Field.Store.YES, Field.Index.ANALYZED);
-            nameField.SetBoost(2);
+            var nameField = new Field("name", counter.CounterName, Field.Store.YES, Field.Index.ANALYZED)
+            {
+                Boost = 2
+            };
             doc.Add(nameField);
 
             // NB: sometimes, the CounterType property getter raises an
@@ -84,11 +90,13 @@ namespace PerformanceCountersBrowser
             // field.
             try
             {
-                var typeField = new Field("type", counter.CounterType.ToString(), Field.Store.YES, Field.Index.ANALYZED_NO_NORMS, Field.TermVector.NO);
-                typeField.SetOmitTermFreqAndPositions(true);
+                var typeField = new Field("type", counter.CounterType.ToString(), Field.Store.YES, Field.Index.ANALYZED_NO_NORMS, Field.TermVector.NO)
+                {
+                    OmitTermFreqAndPositions = true
+                };
                 doc.Add(typeField);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // TODO log this.
             }
@@ -101,7 +109,7 @@ namespace PerformanceCountersBrowser
         public void Dispose()
         {
             _writer.Optimize();
-            _writer.Close();
+            _writer.Dispose();
         }
     }
 }

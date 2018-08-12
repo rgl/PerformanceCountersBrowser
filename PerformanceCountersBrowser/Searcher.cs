@@ -59,7 +59,7 @@ namespace PerformanceCountersBrowser
 
         public Results Search(string queryText)
         {
-            var totalIndexedDocuments = _searcher.GetIndexReader().NumDocs();
+            var totalIndexedDocuments = _searcher.IndexReader.NumDocs();
 
             if (string.IsNullOrEmpty(queryText))
                 return new Results(0, 0, new ResultDocument[0], totalIndexedDocuments);
@@ -82,18 +82,18 @@ namespace PerformanceCountersBrowser
             var topDocuments = _searcher.Search(query, 20000);
 
             var documents = new List<ResultDocument>();
-            foreach (var scoreDoc in topDocuments.scoreDocs) {
-    			var document = _searcher.Doc(scoreDoc.doc);
-    			documents.Add(new ResultDocument(scoreDoc.doc, scoreDoc.score, document));
+            foreach (var scoreDoc in topDocuments.ScoreDocs) {
+    			var document = _searcher.Doc(scoreDoc.Doc);
+    			documents.Add(new ResultDocument(scoreDoc.Doc, scoreDoc.Score, document));
     		}
 
-            var results = new Results(topDocuments.totalHits, topDocuments.GetMaxScore(), documents.ToArray(), totalIndexedDocuments);
+            var results = new Results(topDocuments.TotalHits, topDocuments.MaxScore, documents.ToArray(), totalIndexedDocuments);
             return results;
         }
 
         public void Dispose()
         {
-            _searcher.Close();
+            _searcher.Dispose();
         }
     }
 }

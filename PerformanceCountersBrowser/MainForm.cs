@@ -191,7 +191,7 @@ namespace PerformanceCountersBrowser
                     parentNode.Nodes.Add(node);
                     
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // NB: sometimes, the CounterType property getter raises an
                     // InvalidOperationException:
