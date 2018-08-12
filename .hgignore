@@ -1,7 +1,0 @@
-syntax: glob
-bin
-obj
-*resharper*
-*_ReSharper*
-*.user
-*.suo

@@ -134,6 +134,8 @@
     <Content Include="magnifier.png" />
     <Content Include="ruby.ico" />
     <Content Include="ruby.png" />
+    <Content Include="system-monitor.ico" />
+    <Content Include="system-monitor.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="AxSystemMonitor">

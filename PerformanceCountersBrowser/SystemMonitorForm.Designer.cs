@@ -51,6 +51,7 @@
             this.Controls.Add(this.systemMonitor);
             this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SystemMonitorForm";
             this.ShowInTaskbar = false;
             this.Text = "System Monitor";
